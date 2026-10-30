@@ -15,7 +15,8 @@ from .models import ActionItem, Decision, Document, ItemDocLink, ItemHistory, Me
 log = logging.getLogger("meetinghub.web")
 router = APIRouter()
 templates = Jinja2Templates(directory=str(config.BASE_DIR / "app" / "templates"))
-templates.env.globals.update(STATUSES=services.STATUSES, ATTENDANCE=services.ATTENDANCE, OPEN=services.OPEN, today=date.today)
+templates.env.globals.update(STATUSES=services.STATUSES, PRIORITIES=services.PRIORITIES,
+                             ATTENDANCE=services.ATTENDANCE, OPEN=services.OPEN, today=date.today)
 
 PROGRESS = {"open": 15, "in_progress": 60, "done": 100, "dropped": 100}
 
@@ -264,9 +265,10 @@ def catchup(mid: int, request: Request, person: str = "", s: Session = Depends(g
 
 # ---------------------------------------------------------------- items
 @router.post("/meetings/{mid}/items")
-def add_item(mid: int, title: str = Form(""), owner: str = Form(""), due_date: str = Form(""), s: Session = Depends(get_session)):
+def add_item(mid: int, title: str = Form(""), owner: str = Form(""), due_date: str = Form(""),
+             priority: str = Form("normal"), s: Session = Depends(get_session)):
     try:
-        services.create_item(s, mid, title, owner, due_date)
+        services.create_item(s, mid, title, owner, due_date, priority)
     except ValueError as e:
         return redirect(f"/meetings/{mid}", err=str(e))
     return redirect(f"/meetings/{mid}", msg="Action item added.")
@@ -274,10 +276,12 @@ def add_item(mid: int, title: str = Form(""), owner: str = Form(""), due_date: s
 
 @router.post("/items/{iid}")
 def update_item(iid: int, title: str = Form(""), owner: str = Form(""), due_date: str = Form(""),
-                status: str = Form(""), outcome: str = Form(""), next: str = Form("/"), s: Session = Depends(get_session)):
+                priority: str = Form("normal"), status: str = Form(""), outcome: str = Form(""),
+                next: str = Form("/"), s: Session = Depends(get_session)):
     target = safe_next(next, "/")
     try:
-        services.update_item(s, iid, title=title, owner=owner, due_raw=due_date, status=status, outcome=outcome)
+        services.update_item(s, iid, title=title, owner=owner, due_raw=due_date, priority=priority,
+                             status=status, outcome=outcome)
     except ValueError as e:
         return redirect(target, err=str(e))
     return redirect(target, msg="Item updated.")

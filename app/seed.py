@@ -48,8 +48,8 @@ def seed_demo_data() -> None:
                      "Release the limited edition in two stages, starting with the community preview."):
             s.add(Decision(meeting_id=m1.id, text=text))
 
-        def item(title, owner, due, status, outcome="", idle_days=0):
-            it = ActionItem(title=title, owner=owner, due_date=due, status=status, outcome=outcome,
+        def item(title, owner, due, status, priority="normal", outcome="", idle_days=0):
+            it = ActionItem(title=title, owner=owner, priority=priority, due_date=due, status=status, outcome=outcome,
                             origin_meeting_id=m1.id, current_meeting_id=m1.id, ai_generated=True,
                             created_at=now() - timedelta(days=8), updated_at=now() - timedelta(days=idle_days))
             s.add(it)
@@ -58,13 +58,13 @@ def seed_demo_data() -> None:
             if status == "done":
                 s.add(ItemHistory(item_id=it.id, event="status_changed", detail=f"open -> done. Outcome: {outcome}"))
 
-        item("Resolve the final sample fitting notes", "Rahul", today - timedelta(days=3), "in_progress", idle_days=6)
-        item("Draft the SS26 collection story", "Meera", today + timedelta(days=2), "open", idle_days=7)
-        item("Share the production cost comparison with finance", "Asha", today - timedelta(days=1), "open", idle_days=2)
+        item("Resolve the final sample fitting notes", "Rahul", today - timedelta(days=3), "in_progress", "urgent", idle_days=6)
+        item("Draft the SS26 collection story", "Meera", today + timedelta(days=2), "open", "high", idle_days=7)
+        item("Share the production cost comparison with finance", "Asha", today - timedelta(days=1), "open", "high", idle_days=2)
         item("Update the launch and press-kit checklist", "Dev", today - timedelta(days=4), "done",
              outcome="Checklist updated and approved by the studio lead.", idle_days=3)
-        item("Select final lookbook images for the campaign", "Asha", today + timedelta(days=5), "in_progress", idle_days=1)
-        item("Confirm community preview guest list", "Dev", today + timedelta(days=7), "open", idle_days=0)
+        item("Select final lookbook images for the campaign", "Asha", today + timedelta(days=5), "in_progress", "high", idle_days=1)
+        item("Confirm community preview guest list", "Dev", today + timedelta(days=7), "open", "low", idle_days=0)
 
         for title, content in (
             ("SS26 collection brief", "The creative direction, material story and tone of voice for the SS26 limited-edition collection."),

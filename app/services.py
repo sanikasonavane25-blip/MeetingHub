@@ -19,6 +19,7 @@ STATUSES = OPEN + CLOSED
 ATTENDANCE = ("attended", "missed", "no_response", "on_leave")
 KINDS = ("meeting", "handover")
 MEETING_STATUSES = ("planned", "held", "closed")
+PRIORITIES = ("urgent", "high", "normal", "low")
 STOP = set("the and for with from that this will have into about over after before their they them were been "
            "being than then also not are our you your has had can should would could".split())
 
@@ -136,12 +137,15 @@ def add_decision(s: Session, meeting_id: int, text: str) -> None:
 
 # ---------------------------------------------------------------- action items
 def create_item(s: Session, meeting_id: int, title: str, owner: str = "", due_raw: str = "",
-                ai: bool = False, commit: bool = True) -> ActionItem:
+                priority: str = "normal", ai: bool = False, commit: bool = True) -> ActionItem:
     title = (title or "").strip()
     if len(title) < 3:
         raise ValueError("Action item needs a title of at least 3 characters.")
     get_or_404(s, Meeting, meeting_id)
-    item = ActionItem(title=title[:300], owner=(owner or "").strip() or "Unassigned", due_date=parse_date(due_raw),
+    if priority not in PRIORITIES:
+        raise ValueError("Invalid priority.")
+    item = ActionItem(title=title[:300], owner=(owner or "").strip() or "Unassigned", priority=priority,
+                      due_date=parse_date(due_raw),
                       origin_meeting_id=meeting_id, current_meeting_id=meeting_id, ai_generated=ai)
     s.add(item)
     s.flush()
@@ -153,7 +157,7 @@ def create_item(s: Session, meeting_id: int, title: str, owner: str = "", due_ra
 
 
 def update_item(s: Session, item_id: int, title: str = None, owner: str = None, due_raw: str = None,
-                status: str = None, outcome: str = None) -> ActionItem:
+                status: str = None, outcome: str = None, priority: str = None) -> ActionItem:
     item = get_or_404(s, ActionItem, item_id)
     new_status = status if status else item.status
     if new_status not in STATUSES:
@@ -162,6 +166,9 @@ def update_item(s: Session, item_id: int, title: str = None, owner: str = None, 
     if new_status in CLOSED and not new_outcome:
         raise ValueError("Record the outcome before closing an item (what was the result?).")
     new_due = item.due_date if due_raw is None else parse_date(due_raw)
+    new_priority = item.priority if priority is None else priority
+    if new_priority not in PRIORITIES:
+        raise ValueError("Invalid priority.")
     new_owner = item.owner if not (owner or "").strip() else owner.strip()
     new_title = item.title if not (title or "").strip() else title.strip()[:300]
 
@@ -173,6 +180,9 @@ def update_item(s: Session, item_id: int, title: str = None, owner: str = None, 
     if new_due != item.due_date:
         _hist(s, item, "due_changed", f"{item.due_date or 'none'} -> {new_due or 'none'}")
         item.due_date, changed = new_due, True
+    if new_priority != item.priority:
+        _hist(s, item, "priority_changed", f"{item.priority} -> {new_priority}")
+        item.priority, changed = new_priority, True
     if new_status != item.status:
         _hist(s, item, "status_changed", f"{item.status} -> {new_status}" + (f". Outcome: {new_outcome}" if new_status in CLOSED else ""))
         event = "item.closed" if new_status in CLOSED else "item.status_changed"
@@ -274,7 +284,9 @@ def attention_items(s: Session) -> list[dict]:
         if reasons:
             meeting = s.get(Meeting, item.current_meeting_id)
             out.append({"item": item, "meeting": meeting, "reasons": reasons, "overdue": overdue})
-    out.sort(key=lambda r: (not r["overdue"], r["item"].due_date or date.max))
+    priority_order = {value: index for index, value in enumerate(PRIORITIES)}
+    out.sort(key=lambda r: (not r["overdue"], priority_order.get(r["item"].priority, 2),
+                            r["item"].due_date or date.max))
     return out
 
 

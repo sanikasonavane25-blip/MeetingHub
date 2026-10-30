@@ -40,6 +40,7 @@ class ActionItem(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     owner: str = "Unassigned"
+    priority: str = "normal"       # urgent | high | normal | low
     due_date: Optional[date] = None
     status: str = "open"             # open | in_progress | done | dropped
     outcome: str = ""                # required when done / dropped

@@ -81,16 +81,19 @@
           </div>
           <form method="post" action="/items/{{ it.id }}" class="grid gap-2 md:grid-cols-12">
             <input type="hidden" name="next" value="/meetings/{{ m.id }}">
-            <div class="md:col-span-5"><label class="lbl">Item</label><input class="input" name="title" value="{{ it.title }}" required></div>
+            <div class="md:col-span-4"><label class="lbl">Item</label><input class="input" name="title" value="{{ it.title }}" required></div>
             <div class="md:col-span-2"><label class="lbl">Owner</label><input class="input" name="owner" value="{{ it.owner }}"></div>
             <div class="md:col-span-2"><label class="lbl">Due</label><input class="input" type="date" name="due_date" value="{{ it.due_date or '' }}"></div>
-            <div class="md:col-span-2"><label class="lbl">Status</label>
+            <div class="md:col-span-2"><label class="lbl">Priority</label>
+              <select class="input" name="priority">{% for priority in PRIORITIES %}<option value="{{ priority }}" {{ 'selected' if priority == it.priority }}>{{ priority|capitalize }}</option>{% endfor %}</select></div>
+            <div class="md:col-span-1"><label class="lbl">Status</label>
               <select class="input" name="status">{% for st in STATUSES %}<option value="{{ st }}" {{ 'selected' if st == it.status }}>{{ st|replace('_',' ') }}</option>{% endfor %}</select></div>
             <div class="flex items-end md:col-span-1"><button class="btn w-full justify-center">Save</button></div>
             <div class="md:col-span-12"><label class="lbl">Outcome (required to mark done or dropped)</label>
               <input class="input" name="outcome" value="{{ it.outcome }}" placeholder="What was the result?"></div>
           </form>
           <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
+            <span class="rounded px-2 py-0.5 font-medium {{ 'bg-red-100 text-red-800' if it.priority == 'urgent' else ('bg-orange-100 text-orange-800' if it.priority == 'high' else 'bg-slate-100 text-slate-600') }}">{{ it.priority|capitalize }} priority</span>
             {% if r.overdue %}<span class="rounded bg-red-100 px-2 py-0.5 font-medium text-red-800">Overdue</span>{% endif %}
             {% if it.ai_generated %}<span class="badge">AI-suggested</span>{% endif %}
             {% if r.origin and r.origin.id != m.id %}<a class="badge underline" href="/meetings/{{ r.origin.id }}">Carried from {{ r.origin.title }}</a>{% endif %}
@@ -105,9 +108,10 @@
         {% endfor %}
       </div>
       <form method="post" action="/meetings/{{ m.id }}/items" class="panel mt-3 grid gap-2 md:grid-cols-12">
-        <div class="md:col-span-5"><label class="lbl" for="ni-title">New action item</label><input class="input" id="ni-title" name="title" required></div>
-        <div class="md:col-span-3"><label class="lbl" for="ni-owner">Owner</label><input class="input" id="ni-owner" name="owner"></div>
+        <div class="md:col-span-4"><label class="lbl" for="ni-title">New action item</label><input class="input" id="ni-title" name="title" required></div>
+        <div class="md:col-span-2"><label class="lbl" for="ni-owner">Owner</label><input class="input" id="ni-owner" name="owner"></div>
         <div class="md:col-span-2"><label class="lbl" for="ni-due">Due</label><input class="input" id="ni-due" type="date" name="due_date"></div>
+        <div class="md:col-span-1"><label class="lbl" for="ni-priority">Priority</label><select class="input" id="ni-priority" name="priority">{% for priority in PRIORITIES %}<option value="{{ priority }}" {{ 'selected' if priority == 'normal' }}>{{ priority|capitalize }}</option>{% endfor %}</select></div>
         <div class="flex items-end md:col-span-2"><button class="btn w-full justify-center">Add item</button></div>
       </form>
     </section>

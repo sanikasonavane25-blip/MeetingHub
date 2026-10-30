@@ -45,7 +45,7 @@ Open http://127.0.0.1:8000. Interactive API docs are at `/docs`. The database (`
 | Requirement | Where |
 |---|---|
 | Create and persist meetings or work transfers (agenda, participants, notes, decisions, action items) | "New meeting or handover" form; meeting page |
-| Lifecycle (planned, held, closed) and action-item tracking (owner, due date, status) | Meeting page; item status `open`, `in_progress`, `done`, `dropped` |
+| Lifecycle (planned, held, closed) and action-item tracking (owner, due date, status, priority) | Meeting page; item status `open`, `in_progress`, `done`, `dropped`; priority `urgent`, `high`, `normal`, `low` |
 | Carry open items forward, keeping history | "Carry open items to a follow-up" creates a linked meeting, moves open items, and writes a `carried_forward` history entry. `origin_meeting_id` is preserved |
 | AI turns unstructured info into a recap | "Generate AI recap": summary, decisions, action items with owner and due date |
 | Catch-up brief for someone who missed the meeting or is taking over | "Catch-up brief" panel: what happened, what you own, what to watch out for, next steps |

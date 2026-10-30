@@ -1,3 +1,4 @@
+from sqlalchemy import inspect, text
 from sqlmodel import Session, SQLModel, create_engine
 
 from . import config
@@ -9,6 +10,9 @@ engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": F
 def init_db() -> None:
     from . import models  # noqa: F401  (register tables)
     SQLModel.metadata.create_all(engine)
+    if "priority" not in {column["name"] for column in inspect(engine).get_columns("actionitem")}:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE actionitem ADD COLUMN priority VARCHAR DEFAULT 'normal'"))
 
 
 def get_session():

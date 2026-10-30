@@ -36,6 +36,7 @@
     <a href="/meetings/{{ card.meeting.id }}" class="group rounded-2xl border border-line bg-white p-4 transition hover:-translate-y-0.5 hover:border-signal/50 hover:shadow-lg hover:shadow-signal/5">
       <div class="flex items-start justify-between gap-3">
         <span class="badge {{ 'bg-signal-soft text-signal-dark' if it.status == 'in_progress' else ('bg-emerald-100 text-emerald-800' if it.status == 'done' else 'bg-amber-100 text-amber-800') }}">{{ it.status|replace('_', ' ') }}</span>
+        <span class="text-[10px] font-bold uppercase tracking-wide {{ 'text-red-600' if it.priority == 'urgent' else ('text-orange-600' if it.priority == 'high' else 'text-slate-400') }}">{{ it.priority }}</span>
         <span class="font-mono text-sm font-bold text-signal">{{ card.progress }}%</span>
       </div>
       <h3 class="mt-4 line-clamp-2 min-h-12 font-bold leading-5 group-hover:text-signal">{{ it.title }}</h3>
