@@ -54,6 +54,20 @@
       <div class="space-y-3">
         {% for r in rows %}{% set it = r.item %}
         <div class="panel {{ 'border-red-300' if r.overdue }} {{ 'bg-slate-50' if it.status not in OPEN }}">
+          <div class="mb-4 rounded-xl border border-coral/20 bg-coral/5 p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div><p class="eyebrow text-coral">Continuity intelligence</p><h3 class="mt-1 font-bold">Can someone else pick this up?</h3></div>
+              <div class="text-right"><span class="font-mono text-xl font-bold {{ 'text-emerald-600' if r.continuity.score >= 80 else ('text-amber-600' if r.continuity.score >= 55 else 'text-red-600') }}">{{ r.continuity.score }}/100</span><p class="text-[10px] uppercase tracking-wide text-slate-400">context health</p></div>
+            </div>
+            <div class="mt-3 h-2 overflow-hidden rounded-full bg-white"><div class="h-full rounded-full {{ 'bg-emerald-500' if r.continuity.score >= 80 else ('bg-amber-500' if r.continuity.score >= 55 else 'bg-red-500') }}" style="width: {{ r.continuity.score }}%"></div></div>
+            <div class="mt-3 grid gap-3 text-xs sm:grid-cols-3">
+              <div><span class="block text-slate-500">Backup</span><strong>{{ r.continuity.backup or 'Not named' }}</strong></div>
+              <div><span class="block text-slate-500">Context holders</span><strong>{{ r.continuity.holders|join(', ') or 'Only owner' }}</strong></div>
+              <div><span class="block text-slate-500">Risk</span><strong class="{{ 'text-emerald-600' if r.continuity.risk == 'Low' else ('text-amber-600' if r.continuity.risk == 'Medium' else 'text-red-600') }}">{{ r.continuity.risk }}</strong></div>
+            </div>
+            <div class="mt-3 rounded-lg bg-white/80 px-3 py-2 text-xs text-slate-600"><span class="font-bold text-ink">Suggested next step:</span> {{ r.continuity.next_action }}</div>
+            {% if r.continuity.gaps %}<div class="mt-2 text-[11px] text-slate-500">Missing context: {{ r.continuity.gaps|join(' · ') }}</div>{% endif %}
+          </div>
           <div class="mb-4 rounded-xl bg-paper p-3">
             <div class="flex items-center justify-between gap-3 text-xs">
               <span class="font-bold uppercase tracking-wide text-slate-500">Work progress</span>

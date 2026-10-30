@@ -1,6 +1,6 @@
 """HTTP routes. Thin: validate input, call services, render or redirect."""
 import logging
-from datetime import date
+from datetime import date, datetime
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -50,6 +50,76 @@ def task_visual(s: Session, item: ActionItem) -> dict:
     }
 
 
+def continuity_visual(s: Session, item: ActionItem) -> dict:
+    meeting = s.get(Meeting, item.current_meeting_id)
+    attendees = s.exec(select(Participant).where(Participant.meeting_id == item.current_meeting_id)).all()
+    history = s.exec(select(ItemHistory).where(ItemHistory.item_id == item.id).order_by(ItemHistory.at.desc())).all()
+    links = s.exec(select(ItemDocLink).where(ItemDocLink.item_id == item.id)).all()
+    attended = [p.name for p in attendees if p.attendance == "attended"]
+    backup = next((name for name in attended if name.lower() != item.owner.lower()), None) if item.owner else None
+    last_activity = item.updated_at or item.created_at
+    age = (datetime.utcnow() - last_activity).days if last_activity else 99
+    overdue = bool(item.due_date and item.due_date < date.today() and item.status in services.OPEN)
+    score = 0
+    gaps = []
+    if item.owner and item.owner != "Unassigned":
+        score += 15
+    else:
+        gaps.append("Assign an owner")
+    if item.due_date:
+        score += 15
+    else:
+        gaps.append("Add a due date")
+    if age <= 7:
+        score += 15
+    else:
+        gaps.append("Add a progress update")
+    if history:
+        score += 15
+    else:
+        gaps.append("Capture the first update")
+    if links:
+        score += 15
+    else:
+        gaps.append("Link a reference")
+    if backup:
+        score += 15
+    else:
+        gaps.append("Choose a backup")
+    if item.status in services.CLOSED:
+        score += 10
+    elif not overdue:
+        score += 5
+    else:
+        gaps.append("Resolve the overdue date")
+    if item.status == "done":
+        next_action = "Share the outcome with the team"
+    elif overdue:
+        next_action = f"Reconnect with {item.owner or 'the owner'} and reset the date"
+    elif not backup:
+        next_action = "Name a backup before the next handover"
+    elif age > 7:
+        next_action = f"Ask {item.owner or 'the owner'} for a progress update"
+    else:
+        next_action = "Keep the next update and decision in the task"
+    if score >= 80:
+        risk = "Low"
+    elif score >= 55:
+        risk = "Medium"
+    else:
+        risk = "High"
+    return {
+        "score": min(score, 100),
+        "risk": risk,
+        "backup": backup,
+        "holders": [name for name in attended if name.lower() != (item.owner or "").lower()][:3],
+        "last_activity": last_activity,
+        "next_action": next_action,
+        "gaps": gaps[:3],
+        "meeting": meeting,
+    }
+
+
 # ---------------------------------------------------------------- dashboard
 @router.get("/")
 def dashboard(request: Request, s: Session = Depends(get_session)):
@@ -62,6 +132,7 @@ def dashboard(request: Request, s: Session = Depends(get_session)):
     attention = services.attention_items(s)
     return render(request, "dashboard.html", meetings=meetings, open_count=open_count, open_items=open_items,
                   workboard=[task_visual(s, item) for item in all_items],
+                  continuity=[(task_visual(s, item), continuity_visual(s, item)) for item in all_items[:4]],
                   attention=attention, ai_on=ai_service.ai_enabled())
 
 
@@ -91,6 +162,7 @@ def meeting_detail(mid: int, request: Request, s: Session = Depends(get_session)
             "item": it,
             "progress": PROGRESS.get(it.status, 0),
             "people": task_visual(s, it)["people"],
+            "continuity": continuity_visual(s, it),
             "overdue": bool(it.due_date and it.due_date < date.today() and it.status in services.OPEN),
             "history": s.exec(select(ItemHistory).where(ItemHistory.item_id == it.id).order_by(ItemHistory.id)).all(),
             "links": s.exec(select(ItemDocLink, Document).where(ItemDocLink.item_id == it.id,

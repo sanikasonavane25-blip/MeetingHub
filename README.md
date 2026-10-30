@@ -54,6 +54,7 @@ Open http://127.0.0.1:8000. Interactive API docs are at `/docs`. The database (`
 | Validation and error handling | Server-side validation with friendly messages; custom 404, 422 and 500 pages that show the request ID |
 | Handles missed or no-response attendees and people on leave | Per-participant attendance; bulk "Hand over open work" reassignment |
 | Work visibility | Dashboard workboard and meeting-level progress bars show task progress, status, owner and attending teammates |
+| Continuity intelligence | Context health scores surface backup coverage, context holders, knowledge links, activity freshness, risk and the next handover action |
 
 ## 3. AI configuration
 
@@ -90,6 +91,8 @@ The application also supports Anthropic and OpenAI-compatible configuration.
 2. **Catch-up brief:** built from a context object (meeting summary, decisions, the person's attendance status, their open items across all meetings, overdue items). The model may only use facts from that context.
 3. **Knowledge-base linking:** a cheap keyword shortlist (top 3 documents per item) is built first, then **one** LLM call picks which links are genuinely relevant and gives a one-line reason. IDs returned by the model are checked against the shortlist, so it cannot invent links.
 4. **Follow-up nudge** (special feature, below).
+
+**Continuity intelligence.** Every action item receives a context-health score out of 100. The score checks whether it has an owner, due date, recent activity, history, a knowledge link and a backup person from the meeting. The dashboard and meeting page show the score, risk level, context holders, missing context and a suggested next step, helping work survive leave, reassignment and handover.
 
 **Reliability.**
 - User text sits inside `<notes>` / `<context>` tags and the system prompt says to treat it as data, which reduces prompt-injection risk.
