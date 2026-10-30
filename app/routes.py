@@ -17,6 +17,8 @@ router = APIRouter()
 templates = Jinja2Templates(directory=str(config.BASE_DIR / "app" / "templates"))
 templates.env.globals.update(STATUSES=services.STATUSES, ATTENDANCE=services.ATTENDANCE, OPEN=services.OPEN, today=date.today)
 
+PROGRESS = {"open": 15, "in_progress": 60, "done": 100, "dropped": 100}
+
 
 def render(request: Request, name: str, status_code: int = 200, **ctx):
     return templates.TemplateResponse(request, name, ctx, status_code=status_code)
@@ -33,16 +35,33 @@ def safe_next(url: str, default: str) -> str:
     return url if url.startswith("/") and not url.startswith("//") else default
 
 
+def task_visual(s: Session, item: ActionItem) -> dict:
+    meeting = s.get(Meeting, item.current_meeting_id)
+    attendees = s.exec(select(Participant).where(Participant.meeting_id == item.current_meeting_id)).all()
+    people = [item.owner] if item.owner and item.owner != "Unassigned" else []
+    for participant in attendees:
+        if participant.attendance == "attended" and participant.name not in people:
+            people.append(participant.name)
+    return {
+        "item": item,
+        "meeting": meeting,
+        "progress": PROGRESS.get(item.status, 0),
+        "people": people[:4],
+    }
+
+
 # ---------------------------------------------------------------- dashboard
 @router.get("/")
 def dashboard(request: Request, s: Session = Depends(get_session)):
     meetings = s.exec(select(Meeting).order_by(Meeting.created_at.desc())).all()
     open_items = s.exec(select(ActionItem).where(ActionItem.status.in_(services.OPEN))).all()
+    all_items = s.exec(select(ActionItem).order_by(ActionItem.updated_at.desc()).limit(8)).all()
     open_count = {}
     for i in open_items:
         open_count[i.current_meeting_id] = open_count.get(i.current_meeting_id, 0) + 1
     attention = services.attention_items(s)
     return render(request, "dashboard.html", meetings=meetings, open_count=open_count, open_items=open_items,
+                  workboard=[task_visual(s, item) for item in all_items],
                   attention=attention, ai_on=ai_service.ai_enabled())
 
 
@@ -70,6 +89,8 @@ def meeting_detail(mid: int, request: Request, s: Session = Depends(get_session)
     for it in items:
         rows.append({
             "item": it,
+            "progress": PROGRESS.get(it.status, 0),
+            "people": task_visual(s, it)["people"],
             "overdue": bool(it.due_date and it.due_date < date.today() and it.status in services.OPEN),
             "history": s.exec(select(ItemHistory).where(ItemHistory.item_id == it.id).order_by(ItemHistory.id)).all(),
             "links": s.exec(select(ItemDocLink, Document).where(ItemDocLink.item_id == it.id,

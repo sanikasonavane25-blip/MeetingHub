@@ -53,6 +53,7 @@ Open http://127.0.0.1:8000. Interactive API docs are at `/docs`. The database (`
 | Record the outcome of each item | Outcome is **required** to mark an item `done` or `dropped` |
 | Validation and error handling | Server-side validation with friendly messages; custom 404, 422 and 500 pages that show the request ID |
 | Handles missed or no-response attendees and people on leave | Per-participant attendance; bulk "Hand over open work" reassignment |
+| Work visibility | Dashboard workboard and meeting-level progress bars show task progress, status, owner and attending teammates |
 
 ## 3. AI configuration
 
@@ -123,7 +124,7 @@ logs.
 All data is stored in the local SQLite database. Set `SEED_DEMO_DATA=false` to
 disable demo seeding.
 
-- **Sprint 42 planning:** a held meeting with four participants (one *missed*, one *no response*), raw notes, two decisions and four action items, including an overdue one, a stalled one and a completed one with a recorded outcome.
+- **SS26 collection planning:** a held DigiPlus collection meeting with four participants (one *missed*, one *no response*), raw notes, two decisions and six action items, including queued, in-progress, overdue and completed work with a recorded outcome. The dashboard workboard visualizes this sample story.
 - **Handover: Meera to Dev:** a planned work transfer with Meera marked *on leave* and raw handover notes you can run through the recap.
 - **Knowledge base:** five team documents (payments webhook runbook, onboarding PRD, release checklist, vendor evaluation criteria, leave and handover policy) plus the sprint meeting itself.
 

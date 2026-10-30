@@ -25,6 +25,31 @@
   <div class="rounded-2xl border border-line bg-white p-5"><p class="eyebrow text-amber-600">Needs a nudge</p><p class="mt-2 text-3xl font-bold">{{ attention|length }}</p><p class="mt-1 text-xs text-slate-500">Overdue or stalled</p></div>
 </div>
 
+<section class="mb-10">
+  <div class="mb-4 flex items-end justify-between">
+    <div><p class="eyebrow text-signal">Workboard / live view</p><h2 class="mt-1 text-2xl font-bold">Where the work stands</h2></div>
+    <span class="hidden text-xs text-slate-500 sm:block">Progress is updated from each task status</span>
+  </div>
+  <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+    {% for card in workboard %}
+    {% set it = card.item %}
+    <a href="/meetings/{{ card.meeting.id }}" class="group rounded-2xl border border-line bg-white p-4 transition hover:-translate-y-0.5 hover:border-signal/50 hover:shadow-lg hover:shadow-signal/5">
+      <div class="flex items-start justify-between gap-3">
+        <span class="badge {{ 'bg-signal-soft text-signal-dark' if it.status == 'in_progress' else ('bg-emerald-100 text-emerald-800' if it.status == 'done' else 'bg-amber-100 text-amber-800') }}">{{ it.status|replace('_', ' ') }}</span>
+        <span class="font-mono text-sm font-bold text-signal">{{ card.progress }}%</span>
+      </div>
+      <h3 class="mt-4 line-clamp-2 min-h-12 font-bold leading-5 group-hover:text-signal">{{ it.title }}</h3>
+      <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full {{ 'bg-emerald-500' if it.status == 'done' else ('bg-signal' if it.status == 'in_progress' else 'bg-coral') }}" style="width: {{ card.progress }}%"></div></div>
+      <div class="mt-3 flex items-center justify-between gap-2 text-xs text-slate-500">
+        <span class="truncate">{{ card.meeting.title }}</span>
+        <span class="flex shrink-0 -space-x-1.5" title="People working on this task">{% for person in card.people %}<span class="grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-ink text-[9px] font-bold text-white">{{ person[:2]|upper }}</span>{% endfor %}</span>
+      </div>
+      <div class="mt-2 text-[11px] text-slate-400">{{ card.people|join(' · ') }}</div>
+    </a>
+    {% else %}<div class="panel text-sm text-slate-600 md:col-span-2 xl:col-span-4">Add an action item to see the workboard come to life.</div>{% endfor %}
+  </div>
+</section>
+
 <div class="grid gap-8 xl:grid-cols-[1.4fr_0.8fr]">
   <section>
     <div class="mb-4 flex items-end justify-between"><div><p class="eyebrow">The rhythm</p><h2 class="mt-1 text-2xl font-bold">Recent sessions</h2></div><a href="/meetings/new" class="text-sm font-bold text-signal hover:underline">Add session →</a></div>

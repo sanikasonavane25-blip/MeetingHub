@@ -44,7 +44,8 @@ def seed_demo_data() -> None:
             s.add(Participant(meeting_id=m1.id, name=name, attendance=att))
         for name, att in (("Meera", "on_leave"), ("Dev", "attended"), ("Asha", "attended")):
             s.add(Participant(meeting_id=m2.id, name=name, attendance=att))
-        for text in ("Ship the v2 onboarding flow behind a feature flag first.", "Postpone SSO integration to Sprint 44."):
+        for text in ("Lock the hero look and campaign narrative before the next studio shoot.",
+                     "Release the limited edition in two stages, starting with the community preview."):
             s.add(Decision(meeting_id=m1.id, text=text))
 
         def item(title, owner, due, status, outcome="", idle_days=0):
@@ -62,6 +63,8 @@ def seed_demo_data() -> None:
         item("Share the production cost comparison with finance", "Asha", today - timedelta(days=1), "open", idle_days=2)
         item("Update the launch and press-kit checklist", "Dev", today - timedelta(days=4), "done",
              outcome="Checklist updated and approved by the studio lead.", idle_days=3)
+        item("Select final lookbook images for the campaign", "Asha", today + timedelta(days=5), "in_progress", idle_days=1)
+        item("Confirm community preview guest list", "Dev", today + timedelta(days=7), "open", idle_days=0)
 
         for title, content in (
             ("SS26 collection brief", "The creative direction, material story and tone of voice for the SS26 limited-edition collection."),
