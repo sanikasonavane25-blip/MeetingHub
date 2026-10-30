@@ -1,5 +1,22 @@
 # MeetingHub: AI-powered knowledge and task management
 
+## Deploy the live app
+
+GitHub Pages only publishes this README because it cannot run the FastAPI server. Deploy the application as a web service instead.
+
+### Render
+
+1. Open [Render](https://render.com/) and sign in with GitHub.
+2. Select **New** → **Blueprint** and choose the `MeetingHub` repository.
+3. Select the `main` branch and apply the `render.yaml` configuration.
+4. In the Render service environment variables, set `AI_API_KEY` to your Google AI Studio key.
+5. Deploy and open the generated `onrender.com` URL.
+6. Confirm the service health check at `/health`.
+
+The service deploys automatically whenever changes are pushed to `main`. The GitHub Actions workflow validates Python compilation and the Docker build before deployment.
+
+The default Render configuration uses the free plan. SQLite data on a free instance is ephemeral and may be reset when the service restarts or redeploys. Use a paid Render instance with a persistent disk mounted at `/data` if meeting and knowledge-base data must survive restarts.
+
 Teams lose context whenever work changes hands. MeetingHub captures what was discussed and decided, hands that context to the right people, and keeps following up on open items until they are closed.
 
 **Stack:** Python 3.10+, FastAPI, SQLite (SQLModel), Jinja2 templates, HTMX, Tailwind (CDN). One codebase, no frontend build step.
