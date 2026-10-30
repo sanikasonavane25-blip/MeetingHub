@@ -3,45 +3,59 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}MeetingHub{% endblock %} · MeetingHub</title>
+  <title>{% block title %}Workspace{% endblock %} · DigiPlus Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { theme: { extend: {
-      fontFamily: { sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'] },
-      colors: { ink: '#18222D', brand: { DEFAULT: '#0F6B66', dark: '#0A4F4B', soft: '#E3F1EF' } } } } }
+      fontFamily: { sans: ['"DM Sans"', 'system-ui', 'sans-serif'], display: ['"Playfair Display"', 'Georgia', 'serif'], mono: ['"DM Mono"', 'monospace'] },
+      colors: { ink: '#172126', paper: '#F6F7F2', line: '#DDE4DE', signal: { DEFAULT: '#0D6B62', dark: '#074C47', soft: '#DFF0EB' }, coral: '#F07A5B', lilac: '#E8E3F5' }
+    } } }
   </script>
   <style type="text/tailwindcss">
-    .btn { @apply inline-flex items-center rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2; }
-    .btn-quiet { @apply inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-ink hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2; }
-    .input { @apply w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand; }
-    .lbl { @apply mb-1 block text-xs font-medium text-slate-600; }
-    .panel { @apply rounded-lg border border-slate-200 bg-white p-4; }
-    .badge { @apply inline-block rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700; }
-    .h2 { @apply mb-3 text-lg font-semibold text-ink; }
+    body { @apply bg-paper text-ink; }
+    .btn { @apply inline-flex items-center justify-center gap-2 rounded-full bg-signal px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-signal-dark hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2; }
+    .btn-quiet { @apply inline-flex items-center justify-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-signal hover:text-signal focus:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2; }
+    .input { @apply w-full rounded-xl border border-line bg-white px-3 py-2 text-sm shadow-sm outline-none transition placeholder:text-slate-400 focus:border-signal focus:ring-4 focus:ring-signal/10; }
+    .lbl { @apply mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500; }
+    .panel { @apply rounded-2xl border border-line bg-white p-5 shadow-[0_12px_30px_rgba(27,48,44,0.04)]; }
+    .badge { @apply inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600; }
+    .h2 { @apply mb-3 text-lg font-bold tracking-tight text-ink; }
+    .eyebrow { @apply font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-signal; }
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: block; }
   </style>
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </head>
-<body class="min-h-screen bg-slate-50 font-sans text-ink antialiased">
-  <header class="border-b border-slate-200 bg-white">
-    <nav class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 text-sm">
-      <a href="/" class="mr-2 text-base font-semibold text-brand">MeetingHub</a>
-      <a href="/" class="hover:text-brand">Dashboard</a>
-      <a href="/attention" class="hover:text-brand">Needs attention</a>
-      <a href="/knowledge" class="hover:text-brand">Knowledge base</a>
-      <a href="/meetings/new" class="btn ml-auto">New meeting or handover</a>
-      <a href="/docs" class="text-slate-500 hover:text-brand">API docs</a>
+<body class="min-h-screen font-sans antialiased">
+  <header class="sticky top-0 z-30 border-b border-line/80 bg-paper/95 backdrop-blur">
+    <nav class="mx-auto flex max-w-7xl items-center gap-5 px-5 py-4 lg:px-8">
+      <a href="/" class="group mr-auto flex items-center gap-3">
+        <span class="grid h-10 w-10 place-items-center rounded-xl bg-ink font-display text-lg font-bold text-white transition group-hover:rotate-[-6deg]">D+</span>
+        <span><span class="block text-base font-bold tracking-tight">DigiPlus</span><span class="block font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">delivery hub</span></span>
+      </a>
+      <div class="hidden items-center gap-1 md:flex">
+        <a href="/" class="rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-white hover:text-signal">Overview</a>
+        <a href="/attention" class="rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-white hover:text-signal">Attention</a>
+        <a href="/knowledge" class="rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-white hover:text-signal">Knowledge</a>
+      </div>
+      <a href="/docs" class="hidden text-xs font-semibold text-slate-500 transition hover:text-signal lg:block">API docs</a>
+      <a href="/meetings/new" class="btn"> <span class="text-lg leading-none">+</span> New session</a>
     </nav>
   </header>
-  <main class="mx-auto max-w-6xl px-4 py-6">
+  <main class="mx-auto max-w-7xl px-5 py-8 lg:px-8 lg:py-10">
     {% if request.query_params.get('msg') %}
-      <div role="status" class="mb-4 rounded-md border border-brand/30 bg-brand-soft px-3 py-2 text-sm text-brand-dark">{{ request.query_params.get('msg') }}</div>
+      <div role="status" class="mb-6 flex items-start gap-3 rounded-2xl border border-signal/20 bg-signal-soft px-4 py-3 text-sm text-signal-dark"><span class="mt-0.5">✓</span><span>{{ request.query_params.get('msg') }}</span></div>
     {% endif %}
     {% if request.query_params.get('err') %}
-      <div role="alert" class="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">{{ request.query_params.get('err') }}</div>
+      <div role="alert" class="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="mt-0.5">!</span><span>{{ request.query_params.get('err') }}</span></div>
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+  <footer class="mx-auto flex max-w-7xl items-center justify-between px-5 pb-8 pt-2 text-xs text-slate-400 lg:px-8">
+    <span>DigiPlus · shared context for teams in motion</span><span class="font-mono">2026 / WORKSPACE</span>
+  </footer>
 </body>
 </html>

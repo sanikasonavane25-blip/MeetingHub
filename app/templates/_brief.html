@@ -1,14 +1,11 @@
 {% if error %}
   <p class="text-sm text-red-700">{{ error }}</p>
 {% else %}
-<div class="rounded-md border border-brand/30 bg-brand-soft p-4 text-sm">
-  <div class="mb-2 text-xs text-slate-600">Catch-up brief for <b>{{ person }}</b> · {{ 'AI-generated' if used_ai else 'Rule-based (AI unavailable)' }}</div>
-  <p class="mb-3">{{ brief.what_happened }}</p>
-  {% if brief.your_items %}<div class="font-medium">What you own</div>
-    <ul class="mb-3 list-disc pl-5">{% for x in brief.your_items %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
-  {% if brief.risks %}<div class="font-medium text-red-800">Watch out</div>
-    <ul class="mb-3 list-disc pl-5">{% for x in brief.risks %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
-  {% if brief.next_steps %}<div class="font-medium">Next steps</div>
-    <ul class="list-disc pl-5">{% for x in brief.next_steps %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+<div class="rounded-2xl border border-signal/20 bg-signal-soft p-5 text-sm">
+  <div class="mb-4 flex items-center justify-between gap-3"><span class="eyebrow">Brief for {{ person }}</span><span class="badge">{{ 'AI-generated' if used_ai else 'Rule-based fallback' }}</span></div>
+  <p class="leading-6">{{ brief.what_happened }}</p>
+  {% if brief.your_items %}<div class="mt-4 font-bold">What you own</div><ul class="mt-2 space-y-1 text-slate-700">{% for x in brief.your_items %}<li>→ {{ x }}</li>{% endfor %}</ul>{% endif %}
+  {% if brief.risks %}<div class="mt-4 font-bold text-red-800">Watch out</div><ul class="mt-2 space-y-1 text-red-800">{% for x in brief.risks %}<li>→ {{ x }}</li>{% endfor %}</ul>{% endif %}
+  {% if brief.next_steps %}<div class="mt-4 font-bold">Next steps</div><ul class="mt-2 space-y-1 text-slate-700">{% for x in brief.next_steps %}<li>→ {{ x }}</li>{% endfor %}</ul>{% endif %}
 </div>
 {% endif %}

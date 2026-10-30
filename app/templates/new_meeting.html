@@ -1,20 +1,15 @@
 {% extends "base.html" %}
-{% block title %}New meeting{% endblock %}
+{% block title %}New session{% endblock %}
 {% block content %}
-<h1 class="h2">New meeting or work transfer</h1>
-<form method="post" action="/meetings" class="panel grid max-w-2xl gap-4">
-  <div><label class="lbl" for="title">Title</label>
-    <input class="input" id="title" name="title" required maxlength="150" placeholder="Sprint 43 planning"></div>
-  <div class="grid gap-4 sm:grid-cols-2">
-    <div><label class="lbl" for="kind">Type</label>
-      <select class="input" id="kind" name="kind"><option value="meeting">Meeting</option><option value="handover">Work transfer (handover)</option></select></div>
-    <div><label class="lbl" for="scheduled_at">When</label>
-      <input class="input" type="datetime-local" id="scheduled_at" name="scheduled_at"></div>
+<div class="mb-8 max-w-2xl"><p class="eyebrow">Create a new rhythm</p><h1 class="mt-2 font-display text-4xl">Start a meeting or handover</h1><p class="mt-3 text-sm leading-6 text-slate-600">Give the team a clear place to capture what matters, who owns it and what happens next.</p></div>
+<form method="post" action="/meetings" class="panel grid max-w-3xl gap-5">
+  <div><label class="lbl" for="title">Session title</label><input class="input text-base" id="title" name="title" required maxlength="150" placeholder="Q4 launch readiness"></div>
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div><label class="lbl" for="kind">Session type</label><select class="input" id="kind" name="kind"><option value="meeting">Team meeting</option><option value="handover">Work transfer / handover</option></select></div>
+    <div><label class="lbl" for="scheduled_at">When</label><input class="input" type="datetime-local" id="scheduled_at" name="scheduled_at"></div>
   </div>
-  <div><label class="lbl" for="participants">Participants (comma-separated names)</label>
-    <input class="input" id="participants" name="participants" placeholder="Asha, Rahul, Meera"></div>
-  <div><label class="lbl" for="agenda">Agenda</label>
-    <textarea class="input" id="agenda" name="agenda" rows="4"></textarea></div>
-  <div><button class="btn">Create</button></div>
+  <div><label class="lbl" for="participants">People in the room</label><input class="input" id="participants" name="participants" placeholder="Asha, Rahul, Meera"></div>
+  <div><label class="lbl" for="agenda">What are we here to move forward?</label><textarea class="input" id="agenda" name="agenda" rows="5" placeholder="1. Review launch risks&#10;2. Confirm owners&#10;3. Agree next steps"></textarea></div>
+  <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4"><a href="/" class="text-sm font-bold text-slate-500 hover:text-signal">Cancel</a><button class="btn">Create session <span>→</span></button></div>
 </form>
 {% endblock %}

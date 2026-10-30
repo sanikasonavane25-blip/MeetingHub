@@ -1,2 +1,2 @@
-<label class="lbl">Suggested message {{ '(AI-drafted)' if used_ai else '(template, AI unavailable)' }}</label>
+<label class="lbl">Suggested message <span class="font-normal normal-case tracking-normal text-slate-400">{{ 'AI-drafted' if used_ai else 'template fallback' }}</span></label>
 <textarea class="input" rows="4">{{ text }}</textarea>

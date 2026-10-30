@@ -11,19 +11,18 @@ from .services import sync_meeting_kb
 
 log = logging.getLogger("meetinghub.seed")
 
-SPRINT_NOTES = """Sprint 42 planning. Asha opened by reviewing last sprint: velocity was down because of the flaky payment webhook tests.
-Rahul said the webhook retries are the root cause and the tests need a rewrite.
-Decision: ship the v2 onboarding flow behind a feature flag first.
-Decision: postpone SSO integration to Sprint 44.
-Action: Rahul to fix the flaky payment webhook tests.
-Action: Meera to draft the onboarding v2 copy.
-Action: Asha to share the vendor pricing comparison with finance.
-Action: Dev to update the release checklist.
+SPRINT_NOTES = """SS26 collection planning. The team reviewed the first fitting and the launch story for the new DigiPlus collection.
+Decision: lock the hero look and campaign narrative before the next studio shoot.
+Decision: move the limited-edition drop to a two-stage release so the community preview lands first.
+Action: Rahul to resolve the final sample fitting notes.
+Action: Meera to draft the collection story and product copy.
+Action: Asha to share the production cost comparison with finance.
+Action: Dev to update the launch checklist and press-kit timeline.
 Meera could not attend, Dev never replied to the invite."""
 
 HANDOVER_NOTES = """Meera goes on leave from next Monday for three weeks.
-She owns the onboarding v2 copy and the user-interview synthesis. Dev will cover her work.
-Interview recordings are in the research folder; the onboarding PRD has the latest tone-of-voice guidance."""
+She owns the SS26 collection story, product copy and studio shoot notes. Dev will cover her work.
+Lookbook selects are in the campaign folder; the collection brief has the latest tone-of-voice guidance."""
 
 
 def seed_demo_data() -> None:
@@ -31,11 +30,10 @@ def seed_demo_data() -> None:
         if s.exec(select(Meeting)).first():
             return
         today = date.today()
-        m1 = Meeting(title="Sprint 42 planning", kind="meeting", status="held", notes=SPRINT_NOTES,
+        m1 = Meeting(title="SS26 collection planning", kind="meeting", status="held", notes=SPRINT_NOTES,
                      scheduled_at=datetime.combine(today - timedelta(days=8), datetime.min.time()).replace(hour=10),
-                     agenda="1. Last sprint review\n2. Sprint 42 scope\n3. Risks",
-                     summary="The team reviewed Sprint 41, found that flaky payment webhook tests slowed delivery, "
-                             "and agreed the Sprint 42 scope. Onboarding v2 ships behind a flag; SSO moves to Sprint 44.")
+                     agenda="1. Collection story\n2. Hero look and release rhythm\n3. Production risks",
+                     summary="The team reviewed the SS26 collection story, locked the hero look direction and agreed a staged limited-edition release.")
         m2 = Meeting(title="Handover: Meera to Dev", kind="handover", status="planned", notes=HANDOVER_NOTES,
                      scheduled_at=datetime.combine(today + timedelta(days=1), datetime.min.time()).replace(hour=15),
                      agenda="Walk through Meera's open work and where the materials live.")
@@ -59,17 +57,17 @@ def seed_demo_data() -> None:
             if status == "done":
                 s.add(ItemHistory(item_id=it.id, event="status_changed", detail=f"open -> done. Outcome: {outcome}"))
 
-        item("Fix the flaky payment webhook tests", "Rahul", today - timedelta(days=3), "in_progress", idle_days=6)
-        item("Draft the onboarding v2 copy", "Meera", today + timedelta(days=2), "open", idle_days=7)
-        item("Share the vendor pricing comparison with finance", "Asha", today - timedelta(days=1), "open", idle_days=2)
-        item("Update the release checklist", "Dev", today - timedelta(days=4), "done",
-             outcome="Checklist updated and approved by QA lead.", idle_days=3)
+        item("Resolve the final sample fitting notes", "Rahul", today - timedelta(days=3), "in_progress", idle_days=6)
+        item("Draft the SS26 collection story", "Meera", today + timedelta(days=2), "open", idle_days=7)
+        item("Share the production cost comparison with finance", "Asha", today - timedelta(days=1), "open", idle_days=2)
+        item("Update the launch and press-kit checklist", "Dev", today - timedelta(days=4), "done",
+             outcome="Checklist updated and approved by the studio lead.", idle_days=3)
 
         for title, content in (
-            ("Payments webhook runbook", "How payment webhook retries work, how to replay failed webhook events, and how to debug flaky webhook tests in CI."),
-            ("Onboarding v2 PRD", "Product requirements for the onboarding v2 flow, the feature flag rollout plan and tone-of-voice guidance for onboarding copy."),
-            ("Release checklist", "Steps before every release: regression suite, feature flag review, rollback plan, QA sign-off and release notes."),
-            ("Vendor evaluation criteria", "Criteria finance uses to compare vendor pricing: total cost of ownership, contract length, support SLAs and security review."),
+            ("SS26 collection brief", "The creative direction, material story and tone of voice for the SS26 limited-edition collection."),
+            ("Lookbook and campaign guide", "Hero look selects, studio shoot sequence, campaign narrative and the handoff from lookbook to launch."),
+            ("Launch and press-kit checklist", "Steps before launch: final samples, image selects, product copy, press notes, release rhythm and studio sign-off."),
+            ("Production cost framework", "Criteria for comparing production costs: materials, sampling, quantities, lead times and margin."),
             ("Leave and handover policy", "When a teammate goes on leave, write a handover note, reassign open work and share where materials live."),
         ):
             s.add(Document(title=title, content=content))

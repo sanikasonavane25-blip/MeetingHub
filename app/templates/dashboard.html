@@ -1,45 +1,52 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Overview{% endblock %}
 {% block content %}
-<div class="mb-6 flex flex-wrap items-baseline justify-between gap-2">
-  <h1 class="text-2xl font-semibold">Dashboard</h1>
-  <p class="text-xs {{ 'text-brand-dark' if ai_on else 'text-amber-700' }}">
-    {{ 'AI is connected' if ai_on else 'AI is not configured: rule-based fallbacks are active. Add AI_API_KEY to .env.' }}</p>
+<section class="relative mb-10 overflow-hidden rounded-[2rem] bg-ink px-6 py-8 text-white shadow-xl shadow-ink/10 sm:px-10 sm:py-10">
+  <div class="absolute -right-20 -top-24 h-72 w-72 rounded-full border-[34px] border-coral/30"></div>
+  <div class="absolute bottom-[-80px] right-24 h-48 w-48 rounded-full bg-signal/40 blur-3xl"></div>
+  <div class="relative max-w-2xl">
+    <p class="eyebrow text-coral">DigiPlus / team pulse</p>
+    <h1 class="mt-3 font-display text-4xl leading-tight sm:text-5xl">Keep the work moving<br><span class="text-signal-soft">between the moments.</span></h1>
+    <p class="mt-4 max-w-xl text-sm leading-6 text-slate-300">A calm home for decisions, handovers and the small details that make delivery feel effortless.</p>
+    <div class="mt-7 flex flex-wrap gap-3">
+      <a href="/meetings/new" class="rounded-full bg-coral px-5 py-2.5 text-sm font-bold text-white transition hover:bg-coral/90">Start a session <span>→</span></a>
+      <a href="/attention" class="rounded-full border border-white/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">Review attention</a>
+    </div>
+  </div>
+  <div class="relative mt-8 flex items-center gap-3 text-xs text-slate-300 sm:absolute sm:bottom-8 sm:right-10 sm:mt-0">
+    <span class="h-2 w-2 rounded-full {{ 'bg-emerald-400' if ai_on else 'bg-amber-400' }}"></span>
+    {{ 'AI workspace connected' if ai_on else 'Rule-based mode active' }}
+  </div>
+</section>
+
+<div class="mb-8 grid gap-3 sm:grid-cols-3">
+  <div class="rounded-2xl border border-line bg-white p-5"><p class="eyebrow">Active sessions</p><p class="mt-2 text-3xl font-bold">{{ meetings|length }}</p><p class="mt-1 text-xs text-slate-500">Meetings and handovers</p></div>
+  <div class="rounded-2xl border border-line bg-white p-5"><p class="eyebrow text-coral">Open actions</p><p class="mt-2 text-3xl font-bold">{{ open_items|length }}</p><p class="mt-1 text-xs text-slate-500">Work still in motion</p></div>
+  <div class="rounded-2xl border border-line bg-white p-5"><p class="eyebrow text-amber-600">Needs a nudge</p><p class="mt-2 text-3xl font-bold">{{ attention|length }}</p><p class="mt-1 text-xs text-slate-500">Overdue or stalled</p></div>
 </div>
 
-<div class="grid gap-6 lg:grid-cols-3">
-  <section class="lg:col-span-2">
-    <h2 class="h2">Meetings and handovers</h2>
-    <div class="panel divide-y divide-slate-100 p-0">
+<div class="grid gap-8 xl:grid-cols-[1.4fr_0.8fr]">
+  <section>
+    <div class="mb-4 flex items-end justify-between"><div><p class="eyebrow">The rhythm</p><h2 class="mt-1 text-2xl font-bold">Recent sessions</h2></div><a href="/meetings/new" class="text-sm font-bold text-signal hover:underline">Add session →</a></div>
+    <div class="grid gap-3">
       {% for m in meetings %}
-      <a href="/meetings/{{ m.id }}" class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50">
-        <div>
-          <div class="font-medium">{{ m.title }}</div>
-          <div class="mt-0.5 flex gap-2 text-xs text-slate-500">
-            <span class="badge">{{ 'Handover' if m.kind == 'handover' else 'Meeting' }}</span><span class="badge">{{ m.status }}</span>
-            {% if m.scheduled_at %}<span>{{ m.scheduled_at.strftime('%d %b %Y') }}</span>{% endif %}
-          </div>
-        </div>
-        <div class="text-sm text-slate-600">{{ open_count.get(m.id, 0) }} open item{{ '' if open_count.get(m.id, 0) == 1 else 's' }}</div>
+      <a href="/meetings/{{ m.id }}" class="group flex items-center gap-4 rounded-2xl border border-line bg-white p-4 transition hover:-translate-y-0.5 hover:border-signal/50 hover:shadow-lg hover:shadow-signal/5">
+        <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl {{ 'bg-lilac text-purple-700' if m.kind == 'handover' else 'bg-signal-soft text-signal-dark' }} font-display text-lg">{{ '↗' if m.kind == 'handover' else '◌' }}</div>
+        <div class="min-w-0 flex-1"><div class="truncate font-bold group-hover:text-signal">{{ m.title }}</div><div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500"><span class="badge">{{ 'Handover' if m.kind == 'handover' else 'Meeting' }}</span><span class="capitalize">{{ m.status }}</span>{% if m.scheduled_at %}<span>· {{ m.scheduled_at.strftime('%d %b %Y') }}</span>{% endif %}</div></div>
+        <div class="hidden text-right sm:block"><div class="font-mono text-lg font-medium">{{ open_count.get(m.id, 0) }}</div><div class="text-[10px] uppercase tracking-wide text-slate-400">open</div></div><span class="text-xl text-slate-300 transition group-hover:translate-x-1 group-hover:text-signal">→</span>
       </a>
-      {% else %}
-      <p class="p-4 text-sm text-slate-600">No meetings yet. <a class="text-brand underline" href="/meetings/new">Create the first one.</a></p>
-      {% endfor %}
+      {% else %}<div class="panel text-sm text-slate-600">No sessions yet. <a class="font-bold text-signal underline" href="/meetings/new">Create the first one.</a></div>{% endfor %}
     </div>
   </section>
-
   <section>
-    <h2 class="h2">Needs attention <span class="text-sm font-normal text-slate-500">({{ attention|length }})</span></h2>
-    <div class="space-y-2">
+    <div class="mb-4"><p class="eyebrow text-coral">Signal check</p><h2 class="mt-1 text-2xl font-bold">Needs attention <span class="text-base font-medium text-slate-400">({{ attention|length }})</span></h2></div>
+    <div class="space-y-3">
       {% for a in attention[:5] %}
-      <a href="/meetings/{{ a.meeting.id }}" class="block rounded-lg border {{ 'border-red-300 bg-red-50' if a.overdue else 'border-amber-300 bg-amber-50' }} p-3 text-sm">
-        <div class="font-medium">{{ a.item.title }}</div>
-        <div class="text-xs text-slate-600">{{ a.item.owner }} · {{ a.reasons|join(', ') }}</div>
+      <a href="/meetings/{{ a.meeting.id }}" class="group block rounded-2xl border {{ 'border-red-200 bg-red-50/60' if a.overdue else 'border-amber-200 bg-amber-50/60' }} p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+        <div class="flex items-start gap-3"><span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full {{ 'bg-red-500' if a.overdue else 'bg-amber-500' }}"></span><div class="min-w-0"><div class="font-bold group-hover:text-signal">{{ a.item.title }}</div><div class="mt-1 text-xs text-slate-600">{{ a.item.owner }} · {{ a.reasons|join(', ') }}</div></div></div>
       </a>
-      {% else %}
-      <p class="panel text-sm text-slate-600">Nothing overdue or stalled.</p>
-      {% endfor %}
-      {% if attention|length > 5 %}<a class="text-sm text-brand underline" href="/attention">See all {{ attention|length }}</a>{% endif %}
+      {% else %}<div class="panel text-sm text-slate-600">Everything is moving. Nice work.</div>{% endfor %}
+      {% if attention|length > 5 %}<a class="inline-block text-sm font-bold text-signal hover:underline" href="/attention">See all {{ attention|length }} signals →</a>{% endif %}
     </div>
   </section>
 </div>

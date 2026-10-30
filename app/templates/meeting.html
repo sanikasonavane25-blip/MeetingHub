@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 {% block title %}{{ m.title }}{% endblock %}
 {% block content %}
-<div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+<div class="mb-8 flex flex-wrap items-start justify-between gap-4">
   <div>
-    <h1 class="text-2xl font-semibold">{{ m.title }}</h1>
-    <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+    <p class="eyebrow">{{ 'Work transfer' if m.kind == 'handover' else 'Team session' }}</p>
+    <h1 class="mt-2 font-display text-4xl">{{ m.title }}</h1>
+    <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
       <span class="badge">{{ 'Handover' if m.kind == 'handover' else 'Meeting' }}</span><span class="badge">{{ m.status }}</span>
       {% if m.scheduled_at %}<span>{{ m.scheduled_at.strftime('%d %b %Y, %H:%M') }}</span>{% endif %}
       {% if prev %}<a class="text-brand underline" href="/meetings/{{ prev.id }}">Follows: {{ prev.title }}</a>{% endif %}
     </div>
   </div>
   <form method="post" action="/meetings/{{ m.id }}/carry-forward" onsubmit="return confirm('Create a follow-up meeting and carry all open items into it?')">
-    <button class="btn-quiet">Carry open items to a follow-up</button>
+    <button class="btn-quiet">Carry open items <span>→</span></button>
   </form>
 </div>
 
@@ -19,7 +20,7 @@
   <div class="space-y-6 lg:col-span-2">
 
     <section>
-      <h2 class="h2">Agenda and notes</h2>
+      <div class="mb-3"><p class="eyebrow">Capture the context</p><h2 class="mt-1 text-2xl font-bold">Agenda and notes</h2></div>
       <form method="post" action="/meetings/{{ m.id }}/notes" class="panel grid gap-3">
         <div><label class="lbl" for="agenda">Agenda</label><textarea class="input" id="agenda" name="agenda" rows="3">{{ m.agenda }}</textarea></div>
         <div><label class="lbl" for="notes">Raw notes, chat or transcript (paste anything)</label>
@@ -34,7 +35,7 @@
     </section>
 
     <section>
-      <h2 class="h2">Summary and decisions</h2>
+      <div class="mb-3"><p class="eyebrow">What we agreed</p><h2 class="mt-1 text-2xl font-bold">Summary and decisions</h2></div>
       <div class="panel">
         <p class="text-sm">{{ m.summary or 'No summary yet. Generate an AI recap from the notes above.' }}</p>
         {% if decisions %}<ul class="mt-3 list-disc pl-5 text-sm">{% for d in decisions %}<li>{{ d.text }}</li>{% endfor %}</ul>{% endif %}
@@ -47,8 +48,8 @@
 
     <section>
       <div class="mb-3 flex items-center justify-between">
-        <h2 class="text-lg font-semibold">Action items</h2>
-        <form method="post" action="/meetings/{{ m.id }}/link-kb"><button class="btn-quiet">Link items to knowledge base</button></form>
+        <div><p class="eyebrow text-coral">Keep it moving</p><h2 class="mt-1 text-2xl font-bold">Action items</h2></div>
+        <form method="post" action="/meetings/{{ m.id }}/link-kb"><button class="btn-quiet">Link to knowledge <span>↗</span></button></form>
       </div>
       <div class="space-y-3">
         {% for r in rows %}{% set it = r.item %}
@@ -89,7 +90,7 @@
 
   <aside class="space-y-6">
     <section>
-      <h2 class="h2">Catch-up brief</h2>
+      <div class="mb-3"><p class="eyebrow">Pass it on</p><h2 class="mt-1 text-2xl font-bold">Catch-up brief</h2></div>
       <div class="panel">
         <p class="mb-2 text-xs text-slate-600">For someone who missed this meeting or is taking over.</p>
         <form hx-get="/meetings/{{ m.id }}/catchup" hx-target="#brief" hx-indicator="#brief-spin" class="flex gap-2">
@@ -103,7 +104,7 @@
     </section>
 
     <section>
-      <h2 class="h2">Participants</h2>
+      <div class="mb-3"><p class="eyebrow">The room</p><h2 class="mt-1 text-2xl font-bold">Participants</h2></div>
       <div class="panel space-y-2">
         {% for p in participants %}
         <form method="post" action="/participants/{{ p.id }}/attendance" class="flex items-center justify-between gap-2 text-sm">
@@ -120,7 +121,7 @@
     </section>
 
     <section>
-      <h2 class="h2">Hand over open work</h2>
+      <div class="mb-3"><p class="eyebrow text-coral">When plans change</p><h2 class="mt-1 text-2xl font-bold">Hand over open work</h2></div>
       <form method="post" action="/meetings/{{ m.id }}/reassign" class="panel grid gap-2">
         <p class="text-xs text-slate-600">Move every open item from one person to another, for example when someone goes on leave.</p>
         <input class="input" name="from_owner" placeholder="From (e.g. Meera)" aria-label="From" list="people" required>
