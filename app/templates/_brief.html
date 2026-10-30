@@ -1,0 +1,14 @@
+{% if error %}
+  <p class="text-sm text-red-700">{{ error }}</p>
+{% else %}
+<div class="rounded-md border border-brand/30 bg-brand-soft p-4 text-sm">
+  <div class="mb-2 text-xs text-slate-600">Catch-up brief for <b>{{ person }}</b> · {{ 'AI-generated' if used_ai else 'Rule-based (AI unavailable)' }}</div>
+  <p class="mb-3">{{ brief.what_happened }}</p>
+  {% if brief.your_items %}<div class="font-medium">What you own</div>
+    <ul class="mb-3 list-disc pl-5">{% for x in brief.your_items %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+  {% if brief.risks %}<div class="font-medium text-red-800">Watch out</div>
+    <ul class="mb-3 list-disc pl-5">{% for x in brief.risks %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+  {% if brief.next_steps %}<div class="font-medium">Next steps</div>
+    <ul class="list-disc pl-5">{% for x in brief.next_steps %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endif %}

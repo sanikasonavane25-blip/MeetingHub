@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-baseline justify-between gap-2">
+  <h1 class="text-2xl font-semibold">Dashboard</h1>
+  <p class="text-xs {{ 'text-brand-dark' if ai_on else 'text-amber-700' }}">
+    {{ 'AI is connected' if ai_on else 'AI is not configured: rule-based fallbacks are active. Add AI_API_KEY to .env.' }}</p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+  <section class="lg:col-span-2">
+    <h2 class="h2">Meetings and handovers</h2>
+    <div class="panel divide-y divide-slate-100 p-0">
+      {% for m in meetings %}
+      <a href="/meetings/{{ m.id }}" class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50">
+        <div>
+          <div class="font-medium">{{ m.title }}</div>
+          <div class="mt-0.5 flex gap-2 text-xs text-slate-500">
+            <span class="badge">{{ 'Handover' if m.kind == 'handover' else 'Meeting' }}</span><span class="badge">{{ m.status }}</span>
+            {% if m.scheduled_at %}<span>{{ m.scheduled_at.strftime('%d %b %Y') }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="text-sm text-slate-600">{{ open_count.get(m.id, 0) }} open item{{ '' if open_count.get(m.id, 0) == 1 else 's' }}</div>
+      </a>
+      {% else %}
+      <p class="p-4 text-sm text-slate-600">No meetings yet. <a class="text-brand underline" href="/meetings/new">Create the first one.</a></p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h2">Needs attention <span class="text-sm font-normal text-slate-500">({{ attention|length }})</span></h2>
+    <div class="space-y-2">
+      {% for a in attention[:5] %}
+      <a href="/meetings/{{ a.meeting.id }}" class="block rounded-lg border {{ 'border-red-300 bg-red-50' if a.overdue else 'border-amber-300 bg-amber-50' }} p-3 text-sm">
+        <div class="font-medium">{{ a.item.title }}</div>
+        <div class="text-xs text-slate-600">{{ a.item.owner }} · {{ a.reasons|join(', ') }}</div>
+      </a>
+      {% else %}
+      <p class="panel text-sm text-slate-600">Nothing overdue or stalled.</p>
+      {% endfor %}
+      {% if attention|length > 5 %}<a class="text-sm text-brand underline" href="/attention">See all {{ attention|length }}</a>{% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Knowledge base{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold">Knowledge base</h1>
+<p class="mb-6 mt-1 max-w-2xl text-sm text-slate-600">Team documents plus every recapped meeting. Action items are linked to these entries from each meeting page.</p>
+<div class="grid gap-6 lg:grid-cols-3">
+  <section class="space-y-3 lg:col-span-2">
+    {% for d in docs %}
+    <article class="panel">
+      <div class="flex items-center gap-2"><h2 class="font-medium">{{ d.title }}</h2><span class="badge">{{ 'Past meeting' if d.doc_type == 'meeting' else 'Document' }}</span></div>
+      <p class="mt-1 whitespace-pre-line text-sm text-slate-600">{{ d.content[:280] }}{{ '…' if d.content|length > 280 }}</p>
+      {% if d.source_meeting_id %}<a class="mt-2 inline-block text-xs text-brand underline" href="/meetings/{{ d.source_meeting_id }}">Open meeting</a>{% endif %}
+      {% if linked.get(d.id) %}<div class="mt-2 text-xs text-slate-500">Linked items: {% for i in linked[d.id] %}<span class="badge">{{ i.title }}</span> {% endfor %}</div>{% endif %}
+    </article>
+    {% endfor %}
+  </section>
+  <section>
+    <h2 class="h2">Add a document</h2>
+    <form method="post" action="/knowledge" class="panel grid gap-3">
+      <div><label class="lbl" for="t">Title</label><input class="input" id="t" name="title" required maxlength="150"></div>
+      <div><label class="lbl" for="c">Content</label><textarea class="input" id="c" name="content" rows="6" required></textarea></div>
+      <div><button class="btn">Add document</button></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

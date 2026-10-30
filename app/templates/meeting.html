@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{{ m.title }}{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold">{{ m.title }}</h1>
+    <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+      <span class="badge">{{ 'Handover' if m.kind == 'handover' else 'Meeting' }}</span><span class="badge">{{ m.status }}</span>
+      {% if m.scheduled_at %}<span>{{ m.scheduled_at.strftime('%d %b %Y, %H:%M') }}</span>{% endif %}
+      {% if prev %}<a class="text-brand underline" href="/meetings/{{ prev.id }}">Follows: {{ prev.title }}</a>{% endif %}
+    </div>
+  </div>
+  <form method="post" action="/meetings/{{ m.id }}/carry-forward" onsubmit="return confirm('Create a follow-up meeting and carry all open items into it?')">
+    <button class="btn-quiet">Carry open items to a follow-up</button>
+  </form>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+
+    <section>
+      <h2 class="h2">Agenda and notes</h2>
+      <form method="post" action="/meetings/{{ m.id }}/notes" class="panel grid gap-3">
+        <div><label class="lbl" for="agenda">Agenda</label><textarea class="input" id="agenda" name="agenda" rows="3">{{ m.agenda }}</textarea></div>
+        <div><label class="lbl" for="notes">Raw notes, chat or transcript (paste anything)</label>
+          <textarea class="input" id="notes" name="notes" rows="8">{{ m.notes }}</textarea></div>
+        <div class="flex flex-wrap items-end gap-3">
+          <div><label class="lbl" for="status">Status</label>
+            <select class="input" id="status" name="status">{% for st in ['planned','held','closed'] %}<option {{ 'selected' if m.status == st }}>{{ st }}</option>{% endfor %}</select></div>
+          <button class="btn-quiet">Save</button>
+          <button class="btn" formaction="/meetings/{{ m.id }}/recap" title="Extracts summary, decisions and action items">Generate AI recap</button>
+        </div>
+      </form>
+    </section>
+
+    <section>
+      <h2 class="h2">Summary and decisions</h2>
+      <div class="panel">
+        <p class="text-sm">{{ m.summary or 'No summary yet. Generate an AI recap from the notes above.' }}</p>
+        {% if decisions %}<ul class="mt-3 list-disc pl-5 text-sm">{% for d in decisions %}<li>{{ d.text }}</li>{% endfor %}</ul>{% endif %}
+        <form method="post" action="/meetings/{{ m.id }}/decisions" class="mt-3 flex gap-2">
+          <input class="input" name="text" placeholder="Add a decision" aria-label="Decision" required maxlength="500">
+          <button class="btn-quiet">Add</button>
+        </form>
+      </div>
+    </section>
+
+    <section>
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Action items</h2>
+        <form method="post" action="/meetings/{{ m.id }}/link-kb"><button class="btn-quiet">Link items to knowledge base</button></form>
+      </div>
+      <div class="space-y-3">
+        {% for r in rows %}{% set it = r.item %}
+        <div class="panel {{ 'border-red-300' if r.overdue }} {{ 'bg-slate-50' if it.status not in OPEN }}">
+          <form method="post" action="/items/{{ it.id }}" class="grid gap-2 md:grid-cols-12">
+            <input type="hidden" name="next" value="/meetings/{{ m.id }}">
+            <div class="md:col-span-5"><label class="lbl">Item</label><input class="input" name="title" value="{{ it.title }}" required></div>
+            <div class="md:col-span-2"><label class="lbl">Owner</label><input class="input" name="owner" value="{{ it.owner }}"></div>
+            <div class="md:col-span-2"><label class="lbl">Due</label><input class="input" type="date" name="due_date" value="{{ it.due_date or '' }}"></div>
+            <div class="md:col-span-2"><label class="lbl">Status</label>
+              <select class="input" name="status">{% for st in STATUSES %}<option value="{{ st }}" {{ 'selected' if st == it.status }}>{{ st|replace('_',' ') }}</option>{% endfor %}</select></div>
+            <div class="flex items-end md:col-span-1"><button class="btn w-full justify-center">Save</button></div>
+            <div class="md:col-span-12"><label class="lbl">Outcome (required to mark done or dropped)</label>
+              <input class="input" name="outcome" value="{{ it.outcome }}" placeholder="What was the result?"></div>
+          </form>
+          <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
+            {% if r.overdue %}<span class="rounded bg-red-100 px-2 py-0.5 font-medium text-red-800">Overdue</span>{% endif %}
+            {% if it.ai_generated %}<span class="badge">AI-suggested</span>{% endif %}
+            {% if r.origin and r.origin.id != m.id %}<a class="badge underline" href="/meetings/{{ r.origin.id }}">Carried from {{ r.origin.title }}</a>{% endif %}
+            {% for link, doc in r.links %}<span class="badge" title="{{ link.reason }}">Doc: {{ doc.title }}</span>{% endfor %}
+          </div>
+          {% if r.links %}<ul class="mt-2 text-xs text-slate-600">{% for link, doc in r.links %}<li>{{ doc.title }}: {{ link.reason }}</li>{% endfor %}</ul>{% endif %}
+          <details class="mt-2 text-xs text-slate-600"><summary class="cursor-pointer">History ({{ r.history|length }})</summary>
+            <ul class="mt-1 space-y-0.5">{% for h in r.history %}<li>{{ h.at.strftime('%d %b %H:%M') }} · {{ h.event|replace('_',' ') }} · {{ h.detail }}</li>{% endfor %}</ul></details>
+        </div>
+        {% else %}
+        <p class="panel text-sm text-slate-600">No action items yet. Generate an AI recap or add one below.</p>
+        {% endfor %}
+      </div>
+      <form method="post" action="/meetings/{{ m.id }}/items" class="panel mt-3 grid gap-2 md:grid-cols-12">
+        <div class="md:col-span-5"><label class="lbl" for="ni-title">New action item</label><input class="input" id="ni-title" name="title" required></div>
+        <div class="md:col-span-3"><label class="lbl" for="ni-owner">Owner</label><input class="input" id="ni-owner" name="owner"></div>
+        <div class="md:col-span-2"><label class="lbl" for="ni-due">Due</label><input class="input" id="ni-due" type="date" name="due_date"></div>
+        <div class="flex items-end md:col-span-2"><button class="btn w-full justify-center">Add item</button></div>
+      </form>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section>
+      <h2 class="h2">Catch-up brief</h2>
+      <div class="panel">
+        <p class="mb-2 text-xs text-slate-600">For someone who missed this meeting or is taking over.</p>
+        <form hx-get="/meetings/{{ m.id }}/catchup" hx-target="#brief" hx-indicator="#brief-spin" class="flex gap-2">
+          <input class="input" name="person" list="people" placeholder="Name" aria-label="Person" required>
+          <datalist id="people">{% for p in participants %}<option value="{{ p.name }}">{% endfor %}</datalist>
+          <button class="btn">Brief</button>
+        </form>
+        <span id="brief-spin" class="htmx-indicator mt-2 block text-xs text-slate-500">Writing brief…</span>
+        <div id="brief" class="mt-3"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="h2">Participants</h2>
+      <div class="panel space-y-2">
+        {% for p in participants %}
+        <form method="post" action="/participants/{{ p.id }}/attendance" class="flex items-center justify-between gap-2 text-sm">
+          <span>{{ p.name }}</span>
+          <select class="input w-auto" name="attendance" aria-label="Attendance for {{ p.name }}" onchange="this.form.submit()">
+            {% for a in ATTENDANCE %}<option value="{{ a }}" {{ 'selected' if a == p.attendance }}>{{ a|replace('_',' ') }}</option>{% endfor %}</select>
+        </form>
+        {% endfor %}
+        <form method="post" action="/meetings/{{ m.id }}/participants" class="flex gap-2 pt-2">
+          <input class="input" name="names" placeholder="Add names, comma-separated" aria-label="Add participants">
+          <button class="btn-quiet">Add</button>
+        </form>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="h2">Hand over open work</h2>
+      <form method="post" action="/meetings/{{ m.id }}/reassign" class="panel grid gap-2">
+        <p class="text-xs text-slate-600">Move every open item from one person to another, for example when someone goes on leave.</p>
+        <input class="input" name="from_owner" placeholder="From (e.g. Meera)" aria-label="From" list="people" required>
+        <input class="input" name="to_owner" placeholder="To (e.g. Dev)" aria-label="To" list="people" required>
+        <button class="btn-quiet">Reassign open items</button>
+      </form>
+    </section>
+  </aside>
+</div>
+<style>.htmx-indicator{display:none}.htmx-request .htmx-indicator,.htmx-request.htmx-indicator{display:block}</style>
+{% endblock %}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MeetingHub{% endblock %} · MeetingHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'] },
+      colors: { ink: '#18222D', brand: { DEFAULT: '#0F6B66', dark: '#0A4F4B', soft: '#E3F1EF' } } } } }
+  </script>
+  <style type="text/tailwindcss">
+    .btn { @apply inline-flex items-center rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2; }
+    .btn-quiet { @apply inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-ink hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2; }
+    .input { @apply w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand; }
+    .lbl { @apply mb-1 block text-xs font-medium text-slate-600; }
+    .panel { @apply rounded-lg border border-slate-200 bg-white p-4; }
+    .badge { @apply inline-block rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700; }
+    .h2 { @apply mb-3 text-lg font-semibold text-ink; }
+  </style>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-ink antialiased">
+  <header class="border-b border-slate-200 bg-white">
+    <nav class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 text-sm">
+      <a href="/" class="mr-2 text-base font-semibold text-brand">MeetingHub</a>
+      <a href="/" class="hover:text-brand">Dashboard</a>
+      <a href="/attention" class="hover:text-brand">Needs attention</a>
+      <a href="/knowledge" class="hover:text-brand">Knowledge base</a>
+      <a href="/meetings/new" class="btn ml-auto">New meeting or handover</a>
+      <a href="/docs" class="text-slate-500 hover:text-brand">API docs</a>
+    </nav>
+  </header>
+  <main class="mx-auto max-w-6xl px-4 py-6">
+    {% if request.query_params.get('msg') %}
+      <div role="status" class="mb-4 rounded-md border border-brand/30 bg-brand-soft px-3 py-2 text-sm text-brand-dark">{{ request.query_params.get('msg') }}</div>
+    {% endif %}
+    {% if request.query_params.get('err') %}
+      <div role="alert" class="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">{{ request.query_params.get('err') }}</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

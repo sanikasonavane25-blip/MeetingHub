@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+{% block content %}
+<div class="panel max-w-xl">
+  <h1 class="h2">{{ code }}: that did not work</h1>
+  <p class="text-sm">{{ message }}</p>
+  <p class="mt-3 text-xs text-slate-500">Request ID: <code>{{ rid }}</code></p>
+  <a href="/" class="btn-quiet mt-4">Back to dashboard</a>
+</div>
+{% endblock %}
