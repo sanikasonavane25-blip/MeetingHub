@@ -34,7 +34,7 @@ app.include_router(router)
 @app.middleware("http")
 async def request_context(request: Request, call_next):
     rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
-    request_id_var.set(rid)
+    request_token = request_id_var.set(rid)
     started = time.perf_counter()
     try:
         response = await call_next(request)
@@ -46,21 +46,27 @@ async def request_context(request: Request, call_next):
     level = logging.WARNING if response.status_code >= 400 else logging.INFO
     log_event(log, level, "request", method=request.method, path=request.url.path, status=response.status_code,
               duration_ms=round((time.perf_counter() - started) * 1000))
+    request_id_var.reset(request_token)
     return response
 
 
 @app.exception_handler(StarletteHTTPException)
 async def http_error(request: Request, exc: StarletteHTTPException):
+    log_event(log, logging.WARNING, "request.http_error", method=request.method, path=request.url.path,
+              status=exc.status_code)
     return render(request, "error.html", status_code=exc.status_code, code=exc.status_code, rid=request_id_var.get(),
                   message="That page does not exist." if exc.status_code == 404 else str(exc.detail))
 
 
 @app.exception_handler(LookupError)
 async def not_found(request: Request, exc: LookupError):
+    log_event(log, logging.WARNING, "request.not_found", method=request.method, path=request.url.path, status=404)
     return render(request, "error.html", status_code=404, code=404, rid=request_id_var.get(), message=str(exc))
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_error(request: Request, exc: RequestValidationError):
+    log_event(log, logging.WARNING, "request.validation_error", method=request.method, path=request.url.path,
+              status=422, errors=len(exc.errors()))
     return render(request, "error.html", status_code=422, code=422, rid=request_id_var.get(),
                   message="Some of the submitted values were not valid. Go back and check the form.")
