@@ -56,6 +56,23 @@ Open http://127.0.0.1:8000. Interactive API docs are at `/docs`. The database (`
 
 ## 3. AI configuration
 
+AI is optional. For a free Gemini-compatible setup, create a key in
+[Google AI Studio](https://aistudio.google.com/app/apikey), then put it only in
+your local `.env` file or the deployment platform's secret settings. Never commit
+`.env` or paste the key into source files.
+
+Example Gemini configuration:
+
+```dotenv
+AI_PROVIDER=gemini
+AI_API_KEY=your-google-ai-studio-key
+AI_MODEL=gemini-flash-lite-latest
+AI_TIMEOUT_SECONDS=30
+AI_RETRIES=1
+```
+
+The application also supports Anthropic and OpenAI-compatible configuration.
+
 | Setting (`.env`) | Meaning | Default |
 |---|---|---|
 | `AI_PROVIDER` | `anthropic`, `openai`, `gemini` or `none` | `anthropic` |
@@ -83,9 +100,28 @@ Open http://127.0.0.1:8000. Interactive API docs are at `/docs`. The database (`
   - Nudge fallback uses a template.
 - AI-created items are flagged **AI-suggested** in the UI. Everything is editable, so a human reviews before relying on it.
 
-## 4. Data source
+## 4. Data sources
 
-All data is **my own seed data** (`app/seed.py`), loaded on first start when the database is empty. Set `SEED_DEMO_DATA=false` to disable it.
+MeetingHub uses three data sources:
+
+1. **User-entered data:** meeting titles, agendas, participants, attendance,
+   notes, decisions, action items, outcomes and documents submitted through the
+   web forms.
+2. **Seed/demo data:** the application loads the original demo records from
+   `app/seed.py` on first start when the database is empty. Set
+   `SEED_DEMO_DATA=false` to disable this.
+3. **AI-generated suggestions:** recap summaries, decisions, action items,
+   catch-up briefs, document links and follow-up drafts. AI output is treated as
+   a suggestion, validated before persistence, labelled where applicable, and
+   remains editable by the user. If AI is unavailable, deterministic fallback
+   logic uses saved database content and explicit `Decision:`/`Action:` note lines.
+
+External AI requests send the relevant user-provided context over HTTPS to the
+configured provider. Prompts, notes and API keys are not written to application
+logs.
+
+All data is stored in the local SQLite database. Set `SEED_DEMO_DATA=false` to
+disable demo seeding.
 
 - **Sprint 42 planning:** a held meeting with four participants (one *missed*, one *no response*), raw notes, two decisions and four action items, including an overdue one, a stalled one and a completed one with a recorded outcome.
 - **Handover: Meera to Dev:** a planned work transfer with Meera marked *on leave* and raw handover notes you can run through the recap.
